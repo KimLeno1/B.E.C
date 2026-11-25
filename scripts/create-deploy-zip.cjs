@@ -67,6 +67,7 @@ async function createDeployArchive() {
     'dist',
     'dist-server',
     'public',
+    'routes',
     'api'
   ];
 

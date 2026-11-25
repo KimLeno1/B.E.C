@@ -11,26 +11,26 @@ import { WebSocketServer, WebSocket } from 'ws';
 import Database from 'better-sqlite3';
 import dotenv from 'dotenv';
 import bcrypt from 'bcryptjs';
-import productsRouter from './api/products.js';
-import suppliersRouter from './api/suppliers.js';
-import supplyOrdersRouter from './api/supply_orders.js';
-import usersRouter from './api/users.js';
-import adminsRouter from './api/admins.js';
-import ordersRouter from './api/orders.js';
-import authRouter from './api/auth.js';
-import socialRouter from './api/social.js';
-import userStatsRouter from './api/user_stats.js';
-import miscRouter from './api/misc.js';
-import userRouter from './api/user.js';
-import uploadRouter from './api/upload.js';
-import tagsRouter from './api/tags.js';
-import categoriesRouter from './api/categories.js';
-import aiRouter from './api/ai.js';
-import reviewsRouter from './api/reviews.js';
-import referralsRouter, { generateReferralCode } from './api/referrals.js';
-import { initReferralLedgerTable } from './api/referralBlockchain.js';
-import bundlesRouter, { initBundlesTable } from './api/bundles.js';
-import marketingRouter, { initMarketingTables } from './api/marketing.js';
+import productsRouter from './routes/products.js';
+import suppliersRouter from './routes/suppliers.js';
+import supplyOrdersRouter from './routes/supply_orders.js';
+import usersRouter from './routes/users.js';
+import adminsRouter from './routes/admins.js';
+import ordersRouter from './routes/orders.js';
+import authRouter from './routes/auth.js';
+import socialRouter from './routes/social.js';
+import userStatsRouter from './routes/user_stats.js';
+import miscRouter from './routes/misc.js';
+import userRouter from './routes/user.js';
+import uploadRouter from './routes/upload.js';
+import tagsRouter from './routes/tags.js';
+import categoriesRouter from './routes/categories.js';
+import aiRouter from './routes/ai.js';
+import reviewsRouter from './routes/reviews.js';
+import referralsRouter, { generateReferralCode } from './routes/referrals.js';
+import { initReferralLedgerTable } from './routes/referralBlockchain.js';
+import bundlesRouter, { initBundlesTable } from './routes/bundles.js';
+import marketingRouter, { initMarketingTables } from './routes/marketing.js';
 
 const __filename_resolved = typeof __filename !== 'undefined' ? __filename : '';
 const __dirname_resolved = typeof __dirname !== 'undefined' ? __dirname : path.dirname(__filename_resolved);
@@ -71,7 +71,15 @@ console.error = function (...args) {
 export const db: any = {};
 
 async function initializeDatabase() {
-  const dbPath = path.join(process.cwd(), 'database.sqlite');
+  const localDbPath = path.join(process.cwd(), 'database.sqlite');
+  const dbPath = process.env.VERCEL ? '/tmp/database.sqlite' : localDbPath;
+  if (process.env.VERCEL && !fs.existsSync(dbPath) && fs.existsSync(localDbPath)) {
+    try {
+      fs.copyFileSync(localDbPath, dbPath);
+    } catch {
+      // Fallback to creating a fresh SQLite DB in /tmp
+    }
+  }
   
   let sqliteDb: any;
   try {
@@ -1072,20 +1080,19 @@ async function initializeDatabase() {
   }
 }
 
-async function startServer() {
-  if ((global as any).serverStarted) {
-    console.log('Express server already started (global.serverStarted is true). Skipping duplicate startServer() invocation.');
-    return;
-  }
-  (global as any).serverStarted = true;
+let appPromise: Promise<express.Express> | null = null;
 
-  try {
-    await initializeDatabase();
-  } catch (err) {
-    console.warn("Non-fatal warning during database initialization, continuing startup...", err);
-  }
-  const app = express();
-  app.set('trust proxy', 1);
+export async function createApp(): Promise<express.Express> {
+  if (appPromise) return appPromise;
+
+  appPromise = (async () => {
+    try {
+      await initializeDatabase();
+    } catch (err) {
+      console.warn("Non-fatal warning during database initialization, continuing startup...", err);
+    }
+    const app = express();
+    app.set('trust proxy', 1);
 
   // 6. Helmet CSP with allowances for Paystack, Plausible, Google Fonts, Sentry, and iframe preview
   app.use(helmet({
@@ -1126,6 +1133,7 @@ async function startServer() {
 
   const allowedOriginPatterns = [
     /becfootwear\.gh$/i,
+    /vercel\.app$/i,
     /run\.app$/i,
     /localhost/i,
     /127\.0\.0\.1/
@@ -1292,7 +1300,7 @@ async function startServer() {
   });
 
   let viteDevActive = false;
-  if (process.env.NODE_ENV !== "production") {
+  if (process.env.NODE_ENV !== "production" && !process.env.VERCEL) {
     try {
       const { createServer: createViteServer } = await import('vite');
       const vite = await createViteServer({
@@ -1368,6 +1376,21 @@ async function startServer() {
     } catch {}
     res.status(200).send('<!DOCTYPE html><html><head><title>B.E.C Footwear</title></head><body><div id="root"></div></body></html>');
   });
+
+  return app;
+  })();
+
+  return appPromise;
+}
+
+async function startServer() {
+  if ((global as any).serverStarted) {
+    console.log('Express server already started (global.serverStarted is true). Skipping duplicate startServer() invocation.');
+    return;
+  }
+  (global as any).serverStarted = true;
+
+  const app = await createApp();
 
   // Support Phusion Passenger, Unix domain sockets, and standard TCP ports
   let server: any;
@@ -1479,4 +1502,6 @@ process.on('unhandledRejection', (reason, promise) => {
   }
 });
 
-startServer();
+if (!process.env.VERCEL) {
+  startServer();
+}

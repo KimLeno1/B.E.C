@@ -1,0 +1,20 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "vite build",
+  "outputDirectory": "dist",
+  "functions": {
+    "api/index.ts": {
+      "includeFiles": "{schema.sql,routes/**,middleware/**,lib/**,tierBenefits.ts,server.ts}"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api"
+    },
+    {
+      "source": "/((?!api/|uploads/|assets/|hero/|logo\\.svg|manifest\\.json|sw\\.js|favicon\\.ico).*)",
+      "destination": "/index.html"
+    }
+  ]
+}

@@ -12,6 +12,6 @@
     "strict": false,
     "noEmit": false
   },
-  "include": ["server.ts", "api/**/*.ts"],
+  "include": ["server.ts", "routes/**/*.ts", "api/**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }
