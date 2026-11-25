@@ -1,0 +1,10 @@
+# Phusion Passenger / cPanel Configuration
+PassengerEnabled on
+PassengerAppEnv development
+PassengerFriendlyErrorPages on
+
+# Ensure Node.js handles all requests
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ app.js [QSA,L]

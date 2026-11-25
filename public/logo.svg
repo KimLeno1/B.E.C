@@ -1,0 +1,8 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" rx="112" fill="#4A2B18"/>
+  <path d="M0 92C140 24 360 12 512 76V0H0V92Z" fill="#FAF4EC" opacity="0.12"/>
+  <rect x="36" y="36" width="440" height="440" rx="88" stroke="#FAF4EC" stroke-opacity="0.24" stroke-width="6"/>
+  <text x="256" y="252" text-anchor="middle" fill="#FAF4EC" font-family="Georgia, 'Playfair Display', serif" font-style="italic" font-weight="900" font-size="136" letter-spacing="-4">B.E.C</text>
+  <rect x="108" y="286" width="296" height="64" rx="14" fill="#FAF4EC"/>
+  <text x="256" y="332" text-anchor="middle" fill="#4A2B18" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-style="italic" font-weight="800" font-size="38" letter-spacing="2">Footwear</text>
+</svg>

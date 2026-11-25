@@ -1,0 +1,11 @@
+{
+  "name": "B.E.C Footwear",
+  "short_name": "B.E.C Footwear",
+  "description": "B.E.C Footwear — All-terrain clogs, studded slides, classic slides, double-strap sandals, designer clogs & double-band slippers with nationwide delivery across Ghana.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
